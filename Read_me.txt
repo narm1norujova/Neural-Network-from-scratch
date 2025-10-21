@@ -1,3 +1,6 @@
+m = number of examples.
+n = number of features + label (should be 785).
+Shuffle so we train on random order (better learning).
 
 ## output = np.dot(inputs, weights) + biases:
 

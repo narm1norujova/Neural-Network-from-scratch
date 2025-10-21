@@ -1,4 +1,5 @@
 import numpy as np
+print(np.__version__)
 import pandas as pd
 import matplotlib.pyplot as plt
 data = pd.read_csv(r"C:\Users\afaqo\Downloads\mnist_train.csv.zip", compression='zip')
@@ -12,14 +13,14 @@ np.random.shuffle(data)
 # print(data.shape)
 
 data_dev = data[0:1000].T      # Take the first 1000 examples and transpose
-Y_dev = data_dev[0]            # First row is labels
-X_dev = data_dev[1:n]          # Remaining rows are features
-X_dev = X_dev / 255.           # Normalize pixel values (for images like MNIST)
+Y_dev = data_dev[0]            # Labels
+X_dev = data_dev[1:n]          # Features
+X_dev = X_dev / 255.           # Normalize
 
-data_train = data[1000:m].T    # Take remaining examples and transpose
-Y_train = data_train[0]        # First row = labels
-X_train = data_train[1:n]      # Remaining rows = features
-X_train = X_train / 255.       # Normalize
+data_train = data[1000:m].T    
+Y_train = data_train[0]        
+X_train = data_train[1:n]      
+X_train = X_train / 255.       
 _, m_train = X_train.shape     # m_train = number of training examples
 
 # Initialize parameters
@@ -47,6 +48,7 @@ def softmax(Z):
     expZ = np.exp(Z - np.max(Z, axis=0, keepdims=True))  # stability trick
     A = expZ / np.sum(expZ, axis=0, keepdims=True)
     return A
+# Ensure labels are integers for indexing.
 Y_train = Y_train.astype(int)
 Y_dev = Y_dev.astype(int)
 
@@ -55,14 +57,15 @@ def back_prop(z1, a1, z2, a2, w2, Y, X):
     one_hot_Y = np.zeros((Y.size, 10))
     one_hot_Y[np.arange(Y.size), Y] = 1
     one_hot_Y = one_hot_Y.T
-    dZ2 = a2 - one_hot_Y
+    dZ2 = a2 - one_hot_Y # error
 
     m = X.shape[1]
 
     dW2 = 1/m * dZ2.dot(a1.T)
     db2 = (1/m) * np.sum(dZ2, axis=1, keepdims=True)
 
-    dZ1 = w2.T.dot(dZ2) * (z1 > 0)
+    dZ1 = w2.T.dot(dZ2) * (z1 > 0) # error
+    
     dW1 = 1/m * dZ1.dot(X.T)
     db1 = (1/m) * np.sum(dZ1, axis=1, keepdims=True)
     return dW1, db1, dW2, db2
@@ -75,10 +78,9 @@ def update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha):
     b2 -= alpha * db2
     return W1, b1, W2, b2
 
-
-
 def get_predictions(A2):
     return np.argmax(A2, 0)
+
 # Calculate accuracy
 def get_accuracy(predictions, Y):
     return np.sum(predictions == Y) / Y.size
@@ -90,7 +92,7 @@ def gradient_descent(X, Y, iterations, alpha):
         z1, a1, z2, a2 = forward_prop(w1, b1, w2, b2, X)
         dW1, db1, dW2, db2 = back_prop(z1, a1, z2, a2, w2, Y, X)
         w1, b1, w2, b2 = update_params(w1, b1, w2, b2, dW1, db1, dW2, db2, alpha)
-        if i % 10 == 0:
+        if i % 100 == 0:
             print("Iterations: ", i)
             print("Accuracy: ", get_accuracy(get_predictions(a2), Y))
     return w1, b1, w2, b2
